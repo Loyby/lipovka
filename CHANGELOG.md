@@ -6,6 +6,23 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.0.27] - 2026-11-16
+
+### Added
+- Stroke Bublik: a tap on the sleeping dog at the post office or in the room wakes him for a moment. He lifts his head with a soft sleepy woof, squints happily, wags his curled tail and settles back down. The woof is a real recording (credits in About).
+
+### Changed
+- The wall clock at the post office ticks quieter.
+
+### Fixed
+- A family's post no longer comes all at once: the morning bag carries one letter a house, and the rest go on the next days. Telegrams, dated letters and birthday cards still go the same day.
+
+<!-- tg
+Новое: Бублика можно погладить — он сонно «вуфнет», поднимет голову и повиляет хвостом.
+Ходики на почте тикают тише.
+Исправлено: письма одной семье больше не приходят все разом — в день по одному в дом.
+-->
+
 ## [1.0.26] - 2026-11-13
 
 ### Added
