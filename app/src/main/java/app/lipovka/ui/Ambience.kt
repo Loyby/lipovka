@@ -50,7 +50,7 @@ object Ambience {
 
     /** A layer, its recording in assets/ambience (none for the clock; the stove's is made here) and how loud it sits in the room. */
     enum class Layer(val file: String?, val gain: Float) {
-        CLOCK(null, .12f),
+        CLOCK(null, .06f),
         RAIN("rain", 1.6f),
         STORM("storm", 1.6f),
         WIND("wind", 1.3f),
