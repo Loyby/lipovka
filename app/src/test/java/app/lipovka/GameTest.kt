@@ -349,6 +349,27 @@ class GameTest {
         val older = people.filterIndexed { i, _ -> i % 2 == 1 }.map { it.id }.toSet()
         assertTrue("the longest without post first: ${s.bag.map { it.to }}", s.bag.first().to in older)
     }
+    /** A family's post doesn't all come on one day: one letter a house, what can't wait first. */
+    @Test fun oneLetterAHouseADay() {
+        val game = Game(content)
+        val date = LocalDate.of(2026, 11, 16)
+        val day = date.toEpochDay()
+        val s = GameState(start = day - 30, morning = day)
+        val family = content.residents.filter { s.open(it.district) }.groupBy { it.house }.values.first { it.size >= 3 }
+        var id = 1L
+        for (r in family) s.mail += Mail(id = id++, src = "tpl:x$id", kind = "LETTER", to = r.id, day = day, state = St.SHELF, priority = 2)
+        s.mail += Mail(id = id++, src = "tpl:bday", kind = "LETTER", to = family.last().id, day = day, state = St.SHELF, priority = 3)
+        game.fillBag(s, date)
+        val home = s.bag.filter { game.houseOf(it.to)?.id == family.first().house }
+        assertEquals("to the family: ${home.map { it.src }}", listOf("tpl:bday"), home.map { it.src })
+        // the rest wait, and go on the next days, one a day
+        for (k in 1..3) {
+            for (m in s.bag.toList()) s.put(m.copy(state = St.SEEN))
+            game.fillBag(s, date.plusDays(k.toLong()))
+            assertEquals(1, s.bag.count { game.houseOf(it.to)?.id == family.first().house })
+        }
+    }
+
     /** An everyday letter goes to a second neighbour only once every other one of its kind has gone round. */
     @Test fun everydayLettersDoNotRepeatAcrossNeighbours() {
         val start = LocalDate.of(2026, 3, 2)

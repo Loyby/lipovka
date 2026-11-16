@@ -370,7 +370,11 @@ class Game(val content: Content) {
         return true
     }
 
-    /** Puts shelf mail into the bag by priority until the round is about a usual day's walk. */
+    /**
+     * Puts shelf mail into the bag by priority until the round is about a usual day's walk. One house, one letter a
+     * day: a second for a house already in the bag costs no steps, so it would always fit, and a family's post would
+     * all be handed over at once; it waits for another day, unless it can't (telegrams, dated letters, birthdays).
+     */
     fun fillBag(s: GameState, date: LocalDate) {
         // Halfway to a house, it stays the next one, whatever goes into the bag now. (A leg saved before
         // the heading was remembered gets it here, before the bag changes.)
@@ -382,6 +386,7 @@ class Game(val content: Content) {
         for (m in s.shelf.sortedWith(compareByDescending<Mail> { it.priority }.thenBy { it.day }.thenBy { it.id })) {
             val h = houseOf(m.to)?.id ?: continue
             if (count >= BAG_MAX && m.priority < 4) break
+            if (h in houses && m.priority < 3) continue
             val cost = cost(s, houses + h)
             if (m.priority < 3 && cost > budget && count > 0) continue
             houses += h
