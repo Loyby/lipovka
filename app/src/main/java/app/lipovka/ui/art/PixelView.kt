@@ -36,10 +36,10 @@ object Art {
 }
 
 /**
- * Things in a picture that answer a tap: the cat purrs, the kettle boils, the clock strikes the hour, the
- * calendar gives up yesterday's sheet.
+ * Things in a picture that answer a tap: the cat purrs, the dog thumps his tail, the kettle boils, the clock strikes
+ * the hour, the calendar gives up yesterday's sheet.
  */
-enum class Toy { CAT, KETTLE, CLOCK, CALENDAR }
+enum class Toy { CAT, DOG, KETTLE, CLOCK, CALENDAR }
 
 /**
  * A picture painted into a [Buf]: [base] once (cached while [key] stays the same), then [anim] on
@@ -80,6 +80,7 @@ abstract class Scene(val w: Int, val h: Int) {
         if (age(toy, t) >= 0) return false
         val ticks = when (toy) {
             Toy.CAT -> PURR_TICKS
+            Toy.DOG -> DOG_TICKS
             Toy.KETTLE -> KETTLE_TICKS
             Toy.CLOCK -> {
                 strikes = (LocalTime.now().hour % 12).let { if (it == 0) 12 else it }
@@ -112,6 +113,23 @@ abstract class Scene(val w: Int, val h: Int) {
         // the head comes up a pixel a tick, stays up while it purrs, and settles back down at the end
         val lift = if (purring) minOf(age + 1, left(Toy.CAT, t), HEAD_LIFT) else 0
         Props.cat(b, x, y, if (purring) (sin(t * .75) + 1) / 2 else (sin(t * .18) + 1) / 2, lift = lift)
+    }
+
+    /**
+     * Bublik asleep on his mat at ([x], [y]), as [People.dogLying]. Stroked, he lifts his head with a soft sleepy woof, wags his
+     * tail quick and happy, and lays his head back down as the wagging dies away.
+     */
+    protected fun dog(b: Buf, x: Int, y: Int, t: Int) {
+        spot(Toy.DOG, x - 6, y - 4, 40, 19)
+        val age = age(Toy.DOG, t)
+        if (age < 0) return People.dogLying(b, x, y, (sin(t * .2) + 1) / 2)
+        val left = left(Toy.DOG, t)
+        val lift = minOf(age + 1, left).coerceIn(0, DOG_LIFT)
+        // side to side every tick; the swing narrows to a flick in the last ticks, then stops
+        // the jaw drops for the woof, where it falls in the recording
+        val woof = if (age in DOG_WOOF) 1 else 0
+        val wag = if (age <= DOG_WOOF.last || left < 2) 0 else (if (left < 6) 1 else 2) * (if (age % 2 == 0) 1 else -1)
+        People.dogLying(b, x, y, (sin(t * .6) + 1) / 2, lift, wag, woof)
     }
 
     /** Little hearts rising from the cat while it purrs; drawn last, so nothing covers them. */
@@ -152,6 +170,15 @@ abstract class Scene(val w: Int, val h: Int) {
 
 /** How long a stroke keeps the cat purring, in art ticks (about the length of the sound). */
 const val PURR_TICKS = 37
+
+/** How long the dog woofs and wags when stroked, in art ticks. */
+const val DOG_TICKS = 24
+
+/** The ticks into a stroke when his mouth is open for the woof (where it sounds in the recording). */
+private val DOG_WOOF = 0..1
+
+/** How many pixels the dog raises his head when stroked. */
+private const val DOG_LIFT = 2
 
 /** How long the kettle boils and whistles, in art ticks. */
 const val KETTLE_TICKS = 40

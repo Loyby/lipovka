@@ -533,7 +533,7 @@ class PostOffice(
             val y = (wy + 10 + (rnd(i + 40) * 120 + sin(t * .08 + i) * 4 + t * .05) % 120).roundToInt()
             if (inBeam(x, y) && (t + i) % 9 > 1) b.p(x, y, rgb(0xfff8e0), .75f)
         }
-        if (dog) People.dogLying(b, 16, 192, (sin(t * .2) + 1) / 2)
+        if (dog) dog(b, 16, 192, t)
         // the cat asleep on the letters (or on the desk when there are none)
         // the cat lies right on top of the stack: its belly (row 25 of the sprite) on the top envelope
         val catY = pileTop() - 24

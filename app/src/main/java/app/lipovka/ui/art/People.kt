@@ -400,8 +400,12 @@ object People {
         b.spr(listOf(if (frame % 2 == 0) ".t.t.t.t" else "..t.t.t."), x, feetY - 1, dogPal)
     }
 
-    /** Bublik asleep on his mat: head on his paws, an ear flopped over, the tail curled into a bagel. */
-    fun dogLying(b: Buf, x: Int, y: Int, br: Double) {
+    /**
+     * Bublik asleep on his mat: head on his paws, an ear flopped over, the tail curled into a bagel. Stroked, he raises
+     * his head [lift] pixels and squints happily, gives a soft woof with his jaw dropped [woof] pixels, and wags: the tail swings
+     * [wag] pixels to the side, leaving a faint blur where it just was.
+     */
+    fun dogLying(b: Buf, x: Int, y: Int, br: Double, lift: Int = 0, wag: Int = 0, woof: Int = 0) {
         val fur = intArrayOf(rgb(0x6e4a28), rgb(0x8e643a), rgb(0xb88a52), rgb(0xd8b07a), rgb(0xecd2a2))
         val ol = rgb(0x2a1608)
         // the mat
@@ -409,20 +413,34 @@ object People {
         for (i in -3..32 step 2) b.p(x + i, y + 14, rgb(0xd8c4a0))
         // body
         b.vol(x + 6, y, 22, 12, ell(11.0, 6.5 - br * .4, 11.0, 5.0 + br * .5), sph(8.0, 3.0, 11.0, 6.0, .3), fur, ol)
-        // the tail: a ring on the rump
-        for (a in 0 until 14) {
-            val an = a / 14.0 * 2 * Math.PI
-            b.p(x + 25 + (kotlin.math.cos(an) * 3).toInt(), y + 1 + (kotlin.math.sin(an) * 2.5).toInt(), if (a < 7) fur[3] else fur[2])
+        // the tail: a ring on the rump, swung to one side as it wags with a blur on the other
+        fun tail(dx: Int, alpha: Float) {
+            for (a in 0 until 14) {
+                val an = a / 14.0 * 2 * Math.PI
+                // the ring leans the way it swings: its top travels further than its root
+                val lean = if (kotlin.math.sin(an) < 0) dx else dx / 2
+                b.p(x + 25 + lean + (kotlin.math.cos(an) * 3).toInt(), y + 1 + (kotlin.math.sin(an) * 2.5).toInt(), if (a < 7) fur[3] else fur[2], alpha)
+            }
         }
+        if (wag != 0) tail(-wag, .35f)
+        tail(wag, 1f)
         // front paws stretched forward
         b.vol(x - 2, y + 7, 10, 4, ell(5.0, 2.0, 5.0, 2.0), sph(4.0, 1.0, 5.0, 2.0, .45), fur, ol)
-        // head resting on the paws
-        b.vol(x - 1, y - 1, 11, 9, ell(5.5, 4.5, 5.5, 4.5), sph(4.0, 3.0, 5.5, 4.5, .3), fur, ol)
-        b.vol(x - 5, y + 3, 6, 5, ell(3.0, 2.5, 3.0, 2.5), sph(2.0, 1.5, 3.0, 2.5, .5), fur, ol)
-        b.p(x - 5, y + 4, rgb(0x140c08)); b.p(x - 4, y + 4, rgb(0x140c08))
-        b.p(x + 1, y + 3, rgb(0x3a2010)); b.p(x + 2, y + 3, rgb(0x3a2010))
-        // the floppy ear
-        for (j in 0 until 5) b.r(x + 4, y + j, 3 - j / 3, 1, fur[0])
-        b.p(x + 4, y - 1, ol); b.p(x + 5, y - 1, ol)
+        // head resting on the paws, or raised off them
+        val hy = y - lift
+        b.vol(x - 1, hy - 1, 11, 9, ell(5.5, 4.5, 5.5, 4.5), sph(4.0, 3.0, 5.5, 4.5, .3), fur, ol)
+        b.vol(x - 5, hy + 3, 6, 5, ell(3.0, 2.5, 3.0, 2.5), sph(2.0, 1.5, 3.0, 2.5, .5), fur, ol)
+        b.p(x - 5, hy + 4, rgb(0x140c08)); b.p(x - 4, hy + 4, rgb(0x140c08))
+        // the woof: the lower jaw drops, showing the dark mouth
+        if (woof > 0) {
+            b.r(x - 5, hy + 6, 4, woof, rgb(0x3a0e0a))
+            b.r(x - 5, hy + 6 + woof, 4, 1, fur[2]); b.r(x - 5, hy + 7 + woof, 4, 1, ol)
+        }
+        // asleep the eye is a line; awake and happy it's a little arch
+        if (lift > 0) { val eye = rgb(0x140c08); b.p(x, hy + 3, eye); b.p(x + 1, hy + 2, eye); b.p(x + 2, hy + 2, eye); b.p(x + 3, hy + 3, eye) }
+        else { b.p(x + 1, hy + 3, rgb(0x3a2010)); b.p(x + 2, hy + 3, rgb(0x3a2010)) }
+        // the floppy ear, which pricks up a little when he lifts his head
+        for (j in 0 until 5 - minOf(lift, 2)) b.r(x + 4, hy + j, 3 - j / 3, 1, fur[0])
+        b.p(x + 4, hy - 1, ol); b.p(x + 5, hy - 1, ol)
     }
 }

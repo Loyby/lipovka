@@ -17,6 +17,7 @@ import kotlin.math.sqrt
 /**
  * What the toys in the pictures sound and feel like when tapped. All are real recordings, kept short in res/raw:
  * - the cat's purr: "Misha purrs" by AstronautDown (freesound.org/s/376378), CC0;
+ * - the dog's woof: "WoofSmall2" by Wdomino (freesound.org/s/517131), CC0, pitched up, softer and muffled;
  * - the kettle's whistle: "Whistling kettle" by Work With Sounds / Konrad Gutkowski (Wikimedia Commons), CC BY 4.0;
  * - the clock's strike: "clock chime" by gsb1039 (freesound.org/s/415061), CC0.
  * The calendar's sheet tearing off is made up here: a short crackle of noise, fibre by fibre.
@@ -40,6 +41,7 @@ object Toys {
         val app = context.applicationContext
         when (toy) {
             Toy.CAT -> clip(app, R.raw.purr)?.let { sound(toy, it); buzz(app, follow(it)) }
+            Toy.DOG -> clip(app, R.raw.dog)?.let { sound(toy, it); buzz(app, follow(it, 90)) }
             Toy.KETTLE -> clip(app, R.raw.kettle)?.let { sound(toy, it); buzz(app, follow(it, 45)) }
             Toy.CLOCK -> clip(app, R.raw.chime)?.let { strike ->
                 if (trackStrikes != strikes) { tracks.remove(toy)?.release(); trackStrikes = strikes }
