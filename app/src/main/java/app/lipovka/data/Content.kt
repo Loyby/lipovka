@@ -126,7 +126,10 @@ class Content(
     fun sheet(date: LocalDate): Sheet {
         val day = Cal.mmdd(date)
         val month = "%02d".format(date.monthValue)
-        fun pick(kind: String) = calendar.filter { it.kind == kind && it.on == month }.let { it.getOrNull(date.dayOfMonth % it.size.coerceAtLeast(1)) }
+        // Day by day through the month's lines, so a month long enough doesn't repeat; each year starts the round
+        // somewhere else, so next November isn't this one again.
+        fun pick(kind: String) = calendar.filter { it.kind == kind && it.on == month }
+            .let { it.getOrNull(Math.floorMod(date.dayOfMonth - 1 + date.year * 7, it.size.coerceAtLeast(1))) }
         val sign = calendar.firstOrNull { it.kind == "sign" && it.on == day } ?: pick("saying")
         val names = calendar.filter { it.kind == "name" && day in it.on.split(',') }.flatMap { it.text.ru.split(", ") }
         return Sheet(sign, names, pick("tip"))

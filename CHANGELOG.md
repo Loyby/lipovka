@@ -6,6 +6,24 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.0.28] - 2026-11-17
+
+### Added
+- Certificates of the post: a new page in the album, for letters, kilometres, days in a row and more.
+- Days in a row on the round, counted on any day you hand over a letter. Miss a day and a new run starts; your best stays.
+- Volume in Settings, for the post office sounds and for the cat, dog, kettle and clock.
+- Many more folk sayings and household tips on the calendar sheets.
+
+### Fixed
+- The calendar sheet falls again when you tear it off.
+
+<!-- tg
+Новое: грамоты почтальона в альбоме и серия дней на маршруте.
+В настройках появилась громкость звуков.
+На листках календаря теперь много новых поговорок и советов.
+Исправлено: оторванный листок календаря снова падает.
+-->
+
 ## [1.0.27] - 2026-11-16
 
 ### Added

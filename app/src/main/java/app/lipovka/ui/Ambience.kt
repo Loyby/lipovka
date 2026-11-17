@@ -76,6 +76,9 @@ object Ambience {
     private val loading = HashSet<Layer>()
 
     @Volatile private var want: Set<Layer> = emptySet()
+
+    /** How loud it all plays, 0..1, as set in the settings; changes glide in over a block or two. */
+    @Volatile var volume = 1f
     @Volatile private var track: AudioTrack? = null
     private var thread: Thread? = null
 
@@ -139,6 +142,7 @@ object Ambience {
         val mix = FloatArray(BLOCK)
         var frame = 0L
         var quiet = 0
+        var gain = volume * volume
         t.play()
         track = t
         try {
@@ -159,7 +163,13 @@ object Ambience {
                         mix[k] += g * if (p == null) clock(frame + k) else recording(v, p)
                     }
                 }
-                for (k in 0 until BLOCK) out[k] = (tanh(mix[k].toDouble()) * 32767 * .9).toInt().toShort()
+                // the ear hears loudness roughly as the square of the amplitude, so the bar's steps feel even
+                val to = volume * volume
+                for (k in 0 until BLOCK) {
+                    val g = gain + (to - gain) * k / BLOCK
+                    out[k] = (tanh(mix[k].toDouble()) * 32767 * .9 * g).toInt().toShort()
+                }
+                gain = to
                 if (t.write(out, 0, BLOCK) < 0) break
                 frame += BLOCK
                 // wound down: everything faded and nothing wanted for half a second

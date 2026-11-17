@@ -1,6 +1,12 @@
 package app.lipovka.ui.settings
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import app.lipovka.ui.components.Segments
+import app.lipovka.data.VOLUME_MAX
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -183,7 +189,11 @@ fun SettingsScreen(home: Home, onBack: () -> Unit) {
                 PixelButton(stringResource(if (set.ambience) R.string.on else R.string.off), { c.write { settings.update { it.copy(ambience = !it.ambience) } } },
                     kind = if (set.ambience) Kind.PRIMARY else Kind.GHOST)
             }
+            if (set.ambience) Volume(set.ambienceVolume) { v -> c.write { settings.update { it.copy(ambienceVolume = v) } } }
             Text(stringResource(R.string.ambience_hint), style = T.Small)
+            Text(stringResource(R.string.toys_text), style = T.Body)
+            Volume(set.toysVolume) { v -> c.write { settings.update { it.copy(toysVolume = v) } } }
+            Text(stringResource(R.string.toys_hint), style = T.Small)
 
             Eyebrow(stringResource(R.string.language))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -205,5 +215,24 @@ fun SettingsScreen(home: Home, onBack: () -> Unit) {
             Text(stringResource(R.string.credits), style = T.Small)
             Spacer(Modifier.height(16.dp))
         }
+    }
+}
+
+/**
+ * A volume bar of [VOLUME_MAX] segments: tap or slide along it to set [level]; the far left end is silence.
+ * Kept here while dragging and saved when the finger lifts, so the settings aren't written on every step.
+ */
+@Composable
+private fun Volume(level: Int, onChange: (Int) -> Unit) {
+    var shown by remember(level) { mutableIntStateOf(level) }
+    fun at(x: Float, width: Int) = kotlin.math.ceil((x / width * VOLUME_MAX) - .25f).toInt().coerceIn(0, VOLUME_MAX)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Segments(shown / VOLUME_MAX.toFloat(), Modifier.weight(1f).height(22.dp).pointerInput(Unit) {
+            detectTapGestures { shown = at(it.x, size.width); onChange(shown) }
+        }.pointerInput(Unit) {
+            detectHorizontalDragGestures(onDragEnd = { onChange(shown) }) { ch, _ -> shown = at(ch.position.x, size.width) }
+        }, height = 22.dp)
+        Spacer(Modifier.width(10.dp))
+        Text(if (shown == 0) "—" else "${shown * 100 / VOLUME_MAX}%", style = T.Body, modifier = Modifier.width(48.dp))
     }
 }

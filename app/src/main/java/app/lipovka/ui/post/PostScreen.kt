@@ -140,6 +140,10 @@ fun PostScreen(home: Home, onVisits: () -> Unit, onLetter: (Long) -> Unit, onSet
                     Stat(n.toString(), pluralStringResource(R.plurals.s_letters, n), Modifier.weight(1f))
                 }
                 Before(home)
+                // the run of days on the round, once there is one; the rest of it is with the certificates in the album
+                val streak = app.lipovka.domain.Honors.streak(home.s, home.today)
+                if (streak.now >= 2) Text(pluralStringResource(R.plurals.streak_days, streak.now, streak.now) +
+                    if (streak.today) "" else " · " + stringResource(R.string.streak_today_open), style = T.Small.copy(color = C.redDeep))
             }
             Bag(home)
             val shelf = s.shelf.size

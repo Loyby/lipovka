@@ -107,12 +107,12 @@ fun PixelButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
 
 /** A segmented progress bar, like the mockups. */
 @Composable
-fun Segments(fraction: Float, modifier: Modifier = Modifier, n: Int = 10) {
-    Row(modifier.fillMaxWidth().height(10.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+fun Segments(fraction: Float, modifier: Modifier = Modifier, n: Int = 10, height: Dp = 10.dp) {
+    Row(modifier.fillMaxWidth().height(height), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         val on = (fraction.coerceIn(0f, 1f) * n).roundToInt()
         repeat(n) { i ->
             Box(
-                Modifier.weight(1f).height(10.dp).drawBehind {
+                Modifier.weight(1f).height(height).drawBehind {
                     val p = PX.toPx()
                     drawRect(if (i < on) C.ochre else Color(0xFFD9C290))
                     drawRect(if (i < on) C.ochreDeep else Color(0xFFC2A872), Offset(0f, size.height - p), Size(size.width, p))

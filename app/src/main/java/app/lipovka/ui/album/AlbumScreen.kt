@@ -13,13 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,8 @@ import app.lipovka.ui.Home
 import app.lipovka.ui.Words
 import app.lipovka.ui.art.StampArt
 import app.lipovka.ui.components.BufImage
+import app.lipovka.ui.components.Kind as BtnKind
+import app.lipovka.ui.components.PixelButton
 import app.lipovka.ui.components.pixelBox
 import app.lipovka.ui.theme.C
 import app.lipovka.ui.theme.T
@@ -97,6 +100,8 @@ private fun story(ctx: android.content.Context, home: Home, st: Stamp): Pair<Str
 fun AlbumScreen(home: Home) {
     val ctx = LocalContext.current
     var open by remember { mutableStateOf<Stamp?>(null) }
+    // The certificates share the album: a page of stamps, a page of certificates.
+    var honors by rememberSaveable { mutableStateOf(false) }
     val all = home.content.stamps.values.groupBy { it.series }
     val have = home.s.stamps
     // A tapped stamp is held up over the page, wherever in the album it was: no scrolling back to the top to read it.
@@ -114,7 +119,13 @@ fun AlbumScreen(home: Home) {
             }
         }
     }
-    Column(Modifier.fillMaxSize().background(C.greenDeep).verticalScroll(rememberScrollState()).statusBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // each page opens at its top
+    Column(Modifier.fillMaxSize().background(C.greenDeep).verticalScroll(remember(honors) { ScrollState(0) }).statusBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PixelButton(stringResource(R.string.album_stamps), { honors = false }, Modifier.weight(1f), kind = if (!honors) BtnKind.PRIMARY else BtnKind.GHOST)
+            PixelButton(stringResource(R.string.album_honors), { honors = true }, Modifier.weight(1f), kind = if (honors) BtnKind.PRIMARY else BtnKind.GHOST)
+        }
+        if (honors) { HonorsPage(home); return@Column }
         Text(stringResource(R.string.album_title), style = T.Display.copy(color = C.paper))
         Text("${have.size} / ${home.content.stamps.size}", style = T.Sub.copy(color = C.lamp))
         for ((key, title) in SERIES) {

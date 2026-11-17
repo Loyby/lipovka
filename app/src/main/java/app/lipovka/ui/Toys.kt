@@ -37,6 +37,9 @@ object Toys {
     private val tracks = HashMap<Toy, AudioTrack>()
     private var trackStrikes = 0
 
+    /** How loud the toys sound, 0..1, as set in the settings; the buzz in the hand stays as it is. */
+    @Volatile var volume = 1f
+
     fun play(context: Context, toy: Toy, strikes: Int = 0, tear: Boolean = true) {
         val app = context.applicationContext
         when (toy) {
@@ -110,6 +113,7 @@ object Toys {
                 .build()
                 .also { it.write(clip.pcm, 0, clip.pcm.size); tracks[toy] = it }
             if (t.playState == AudioTrack.PLAYSTATE_PLAYING) t.stop()
+            t.setVolume(volume * volume)
             t.reloadStaticData()
             t.play()
         }.onFailure { Log.w(TAG, "play $toy", it) }

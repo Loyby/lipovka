@@ -284,4 +284,27 @@
     <string name="sounds">Звуки</string>
     <string name="ambience_text">Звуки почты</string>
     <string name="ambience_hint">Пока приложение открыто: тикают ходики, а за стеной то дождь, то ветер, летом поют птицы, вечером стрекочут сверчки, зимой трещит печка.</string>
+    <string name="toys_text">Когда нажимаешь: кот, пёс, чайник, часы, календарь</string>
+    <string name="toys_hint">Как громко отзываются предметы на картинках, когда их трогаешь. До упора влево: тишина.</string>
+    <string name="album_stamps">Марки</string>
+    <string name="album_honors">Грамоты</string>
+    <string name="honors_title">Грамоты почтальона</string>
+    <string name="honors_hint">Грамоты дают за пройденную дорогу, разнесённые письма и дни на маршруте. Полученная грамота остаётся навсегда.</string>
+    <string name="streak_today_done">Сегодня уже засчитан.</string>
+    <string name="streak_today_open">Отдайте сегодня хоть одно письмо, и серия продолжится.</string>
+    <string name="streak_start">Отдайте сегодня письмо, и начнётся новая серия.</string>
+    <plurals name="streak_days" tools:ignore="ImpliedQuantity">
+        <item quantity="one">%1$d день подряд на маршруте</item>
+        <item quantity="few">%1$d дня подряд на маршруте</item>
+        <item quantity="many">%1$d дней подряд на маршруте</item>
+        <item quantity="other">%1$d дня подряд на маршруте</item>
+    </plurals>
+    <plurals name="streak_best" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Лучшая серия: %1$d день.</item>
+        <item quantity="few">Лучшая серия: %1$d дня.</item>
+        <item quantity="many">Лучшая серия: %1$d дней.</item>
+        <item quantity="other">Лучшая серия: %1$d дня.</item>
+    </plurals>
+    <string name="n_honor_title">Грамота: %1$s</string>
+    <string name="streak_none">Дни на маршруте</string>
 </resources>

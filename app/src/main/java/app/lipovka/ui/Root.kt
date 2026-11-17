@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import app.lipovka.R
 import app.lipovka.container
 import app.lipovka.data.Content
 import app.lipovka.data.Settings
+import app.lipovka.data.VOLUME_MAX
 import app.lipovka.data.St
 import app.lipovka.domain.Env
 import app.lipovka.domain.World
@@ -124,12 +126,18 @@ fun LipovkaRoot(settings: Settings) {
         return
     }
     val s = state ?: run { Box(Modifier.fillMaxSize().background(C.bg)); return }
-    val env = remember(now.hour, now.minute / 5, settings, s.flags.size) { c.env(now, settings, s) }
+    // Only what the world outside is made of: a setting that has nothing to do with it (the calendar torn, the
+    // lamp put out) mustn't rebuild it, or every picture is remade mid-animation and a falling sheet is lost.
+    val env = remember(now.toLocalDate(), now.hour, now.minute / 5, settings.place, settings.weather, s.flags.size) { c.env(now, settings, s) }
     val home = Home(s, settings, c.content, c.game, env, now, ctx.ru)
 
     var tab by remember { mutableStateOf(Tab.POST) }
     // The post office's own sounds, while it's in sight; upstairs in the room the wall clock isn't heard.
-    val sounds = if (!settings.ambience) emptySet() else Ambience.layers(env).let { if (tab == Tab.ROOM) it - Ambience.Layer.CLOCK else it }
+    SideEffect {
+        Ambience.volume = settings.ambienceVolume / VOLUME_MAX.toFloat()
+        Toys.volume = settings.toysVolume / VOLUME_MAX.toFloat()
+    }
+    val sounds = if (!settings.ambience || settings.ambienceVolume == 0) emptySet() else Ambience.layers(env).let { if (tab == Tab.ROOM) it - Ambience.Layer.CLOCK else it }
     LifecycleResumeEffect(sounds) {
         Ambience.play(ctx, sounds)
         onPauseOrDispose { Ambience.stop(ctx) }

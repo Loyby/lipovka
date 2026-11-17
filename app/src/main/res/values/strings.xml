@@ -256,4 +256,23 @@
     <string name="sounds">Sounds</string>
     <string name="ambience_text">Post office sounds</string>
     <string name="ambience_hint">While the app is open: the wall clock ticks, and outside there\'s rain or wind, birds in summer, crickets on a summer evening, the stove crackling in winter.</string>
+    <string name="toys_text">When tapped: the cat, the dog, the kettle, the clock, the calendar</string>
+    <string name="toys_hint">How loud the things in the pictures answer a tap. Bars to the far left: silent.</string>
+    <string name="album_stamps">Stamps</string>
+    <string name="album_honors">Certificates</string>
+    <string name="honors_title">Certificates of the post</string>
+    <string name="honors_hint">Certificates are given for the road walked, the letters carried and the days on the round. Once given, they stay.</string>
+    <string name="streak_today_done">Today already counts.</string>
+    <string name="streak_today_open">Hand over one letter today and the run goes on.</string>
+    <string name="streak_start">Hand over a letter today to start a run.</string>
+    <plurals name="streak_days" tools:ignore="ImpliedQuantity">
+        <item quantity="one">%1$d day in a row on the round</item>
+        <item quantity="other">%1$d days in a row on the round</item>
+    </plurals>
+    <plurals name="streak_best" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Best run: %1$d day.</item>
+        <item quantity="other">Best run: %1$d days.</item>
+    </plurals>
+    <string name="n_honor_title">A certificate: %1$s</string>
+    <string name="streak_none">Days on the round</string>
 </resources>

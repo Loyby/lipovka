@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -15,6 +16,9 @@ import app.lipovka.domain.WeatherNow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+
+/** The steps of the volume bars in the settings. */
+const val VOLUME_MAX = 10
 
 private val Context.dataStore by preferencesDataStore("settings")
 
@@ -38,6 +42,9 @@ data class Settings(
     val calendarTorn: Long = -1,
     /** The quiet sounds of the post office while the app is open; on until turned off. */
     val ambience: Boolean = true,
+    /** How loud the post office's sounds are, and the things that answer a tap (the cat, the kettle, the clock…): 0..[VOLUME_MAX]. */
+    val ambienceVolume: Int = VOLUME_MAX,
+    val toysVolume: Int = VOLUME_MAX,
     /** The milestones (the dog, the districts) already told of; null until first looked at, so old ones aren't. */
     val milestonesSeen: Set<String>? = null,
 )
@@ -63,6 +70,8 @@ class SettingsStore(context: Context) {
             lampOut = this[LAMP_OUT] ?: -1,
             calendarTorn = this[CAL_TORN] ?: -1,
             ambience = this[AMBIENCE] ?: true,
+            ambienceVolume = (this[AMB_VOL] ?: VOLUME_MAX).coerceIn(0, VOLUME_MAX),
+            toysVolume = (this[TOYS_VOL] ?: VOLUME_MAX).coerceIn(0, VOLUME_MAX),
             milestonesSeen = this[MILESTONES],
         )
     }
@@ -93,6 +102,8 @@ class SettingsStore(context: Context) {
             it[LAMP_OUT] = s.lampOut
             it[CAL_TORN] = s.calendarTorn
             it[AMBIENCE] = s.ambience
+            it[AMB_VOL] = s.ambienceVolume
+            it[TOYS_VOL] = s.toysVolume
             val seen = s.milestonesSeen
             if (seen != null) it[MILESTONES] = seen else it.remove(MILESTONES)
         }
@@ -116,6 +127,8 @@ class SettingsStore(context: Context) {
         val LAMP_OUT = longPreferencesKey("lamp_out")
         val CAL_TORN = longPreferencesKey("calendar_torn")
         val AMBIENCE = booleanPreferencesKey("ambience")
+        val AMB_VOL = intPreferencesKey("ambience_volume")
+        val TOYS_VOL = intPreferencesKey("toys_volume")
         val MILESTONES = stringSetPreferencesKey("milestones_seen")
     }
 }

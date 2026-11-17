@@ -69,6 +69,9 @@ object Notes {
     /** The things that happen once in the game and are worth a word: Bublik joining, a district opening. */
     private val MILESTONES = listOf("dog", "d1", "d2", "d3", "d4", "d5")
 
+    /** How a certificate is kept among the milestones already told of. */
+    private const val HONOR = "honor:"
+
     suspend fun check(context: Context) {
         val c = context.container
         val set = c.settings.now()
@@ -108,11 +111,18 @@ object Notes {
 
     /** Tells of each milestone reached since last looked; the first look only remembers what's there already. */
     private suspend fun milestones(context: Context, s: app.lipovka.domain.GameState, set: app.lipovka.data.Settings) {
-        val reached = MILESTONES.filter { s.has(it) }.toSet()
+        val today = context.container.game.mailDay(LocalDateTime.now()).toEpochDay()
+        val honors = app.lipovka.domain.Honors.all(s, context.container.content, today).filter { it.got }
+        val reached = MILESTONES.filter { s.has(it) }.toSet() + honors.map { HONOR + it.key } + HONOR
         val seen = set.milestonesSeen
         if (seen != null && reached.all { it in seen }) return
         if (seen != null && set.notify && allowed(context)) {
             val r = context.localized()
+            // a new certificate or two: told together, so a long first day doesn't bring a handful of notes
+            // (those given before certificates came to the game are only remembered, not told of: HONOR marks that look)
+            val fresh = if (HONOR !in seen) emptyList() else honors.filter { HONOR + it.key !in seen }
+            if (fresh.isNotEmpty()) show(context, 20, r.getString(R.string.n_honor_title, fresh.first().title(r.ru)),
+                fresh.joinToString("\n") { it.title(r.ru) + ": " + it.text(r.ru) })
             for (k in MILESTONES.filter { it in reached && it !in seen }) {
                 if (k == "dog") show(context, 10, r.getString(R.string.n_dog_title), r.getString(R.string.n_dog))
                 else {
