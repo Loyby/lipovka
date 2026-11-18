@@ -56,7 +56,6 @@ class LocalDate private constructor(private val epochDay: Long, val year: Int, v
     val month: Month get() = Month.of(monthValue)
     val dayOfWeek: DayOfWeek get() = DayOfWeek.entries[((epochDay + 3) % 7 + 7).toInt() % 7]
     val dayOfYear: Int get() = (epochDay - of(year, 1, 1).epochDay).toInt() + 1
-    val isLeapYear: Boolean get() = leap(year)
 
     fun isLeapYear(): Boolean = leap(year)
     fun lengthOfMonth(): Int = monthLength(year, monthValue)
