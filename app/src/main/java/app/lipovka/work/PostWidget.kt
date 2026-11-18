@@ -28,9 +28,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
+import app.lipovka.time.LocalDate
+import app.lipovka.time.LocalDateTime
+import app.lipovka.time.ZoneId
 
 /**
  * The bag on the home screen: who the next letter is for and how many steps are left. Drawn as one
@@ -148,7 +148,7 @@ class PostWidget : AppWidgetProvider() {
             val bx = 36
             val by = 64
             cv.drawBitmap(Bitmap.createScaledBitmap(icon, icon.width * s, icon.height * s, false), bx.toFloat(), by.toFloat(), null)
-            val font = ResourcesCompat.getFont(context, R.font.m6x11)
+            val font = ResourcesCompat.getFont(context, app.lipovka.shared.R.font.m6x11)
             fun text(t: String, x: Float, y: Float, size: Float, color: Int) {
                 cv.drawText(t, x, y, Paint().apply { typeface = font; textSize = size; this.color = color; isAntiAlias = false })
             }

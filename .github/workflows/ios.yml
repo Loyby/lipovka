@@ -1,0 +1,74 @@
+name: iOS
+
+# Builds the iPhone app as an unsigned Lipovka.ipa. Sign and install it with your own Apple ID
+# using Sideloadly or AltStore (see IOS.md); a free Apple ID keeps it working for 7 days at a time.
+on:
+  push:
+    branches: [main, ios]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ipa:
+    name: Build Lipovka.ipa
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+
+      - name: Shared code for the iPhone compiles
+        run: ./gradlew :shared:compileKotlinIosArm64 --stacktrace
+
+      - name: Generate the Xcode project
+        run: |
+          brew install xcodegen
+          cd iosApp && xcodegen generate
+
+      - name: Build the app (unsigned)
+        run: |
+          cd iosApp
+          xcodebuild -project Lipovka.xcodeproj -scheme Lipovka -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build | tee xcodebuild.log | grep -E "error|warning: .*Kotlin|BUILD" || true
+          test -d build/Build/Products/Release-iphoneos/Lipovka.app || { tail -200 xcodebuild.log; exit 1; }
+
+      - name: Package Lipovka.ipa
+        run: |
+          cd iosApp
+          rm -rf Payload && mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/Lipovka.app Payload/
+          zip -qry Lipovka.ipa Payload
+          ls -la Lipovka.ipa
+
+      - name: Upload Lipovka.ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lipovka-ipa
+          path: iosApp/Lipovka.ipa
+          if-no-files-found: error
+
+      - name: Upload the build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: iosApp/xcodebuild.log

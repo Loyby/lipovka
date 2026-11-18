@@ -6,6 +6,7 @@ import app.lipovka.data.Carried
 import app.lipovka.data.Content
 import app.lipovka.data.Post
 import app.lipovka.data.PostDb
+import app.lipovka.data.memory
 import app.lipovka.domain.Game
 import app.lipovka.domain.Place
 import kotlinx.coroutines.runBlocking

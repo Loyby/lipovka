@@ -12,3 +12,11 @@
 *.keystore
 *.jks
 /design
+
+# iPhone build
+iosApp/Lipovka.xcodeproj/
+iosApp/build/
+iosApp/Payload/
+iosApp/*.ipa
+iosApp/xcodebuild.log
+/shared/build

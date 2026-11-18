@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, ios]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -44,3 +44,4 @@ jobs:
           path: |
             app/build/reports
             app/build/test-results
+            shared/build/reports

@@ -46,8 +46,8 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
-import java.time.LocalDate
-import java.time.LocalDateTime
+import app.lipovka.time.LocalDate
+import app.lipovka.time.LocalDateTime
 
 /** Checks of the evening, the way home, the place field and the delivery note over the demo village (`-Prender`). */
 @RunWith(RobolectricTestRunner::class)
@@ -71,7 +71,7 @@ class RenderArtChecks {
 
     private fun show(name: String, content: @Composable () -> Unit) {
         rule.mainClock.autoAdvance = false
-        rule.setContent { LipovkaTheme { Box(Modifier.fillMaxSize().background(C.paper)) { content() } } }
+        rule.setContent { val la = ApplicationProvider.getApplicationContext<LipovkaApp>(); androidx.compose.runtime.CompositionLocalProvider(app.lipovka.ui.LocalContext provides app.lipovka.ui.Ctx(la.container, la.ru)) { LipovkaTheme { Box(Modifier.fillMaxSize().background(C.paper)) { content() } } } }
         rule.mainClock.advanceTimeBy(1_500)
         rule.waitForIdle()
         rule.runOnUiThread {
@@ -127,7 +127,7 @@ class RenderArtChecks {
     /** #44, #48, #7: the way home, yesterday's steps and "take more" with an empty bag. */
     @Test fun wayHome() {
         runBlocking {
-            DemoSeed.seedIfEmpty(la, la.container)
+            DemoSeed.seedIfEmpty(la.container)
             la.container.post.change { s ->
                 for (m in s.bag) s.put(m.copy(state = St.SEEN, deliveredAt = System.currentTimeMillis()))
                 s.at = "mill"; s.leg = 300; s.heading = "post"
@@ -143,7 +143,7 @@ class RenderArtChecks {
 
     /** #32: the place chosen is in the search field when settings are opened again. */
     @Test fun placeKept() {
-        runBlocking { DemoSeed.seedIfEmpty(la, la.container); la.container.settings.update { it.copy(place = Place("Вологда", "Вологодская область", 59.2, 39.9)) } }
+        runBlocking { DemoSeed.seedIfEmpty(la.container); la.container.settings.update { it.copy(place = Place("Вологда", "Вологодская область", 59.2, 39.9)) } }
         val h = home(today.atTime(12, 0))
         show("settings-place") { SettingsScreen(h) {} }
         rule.onNode(hasSetTextAction() and hasText("Вологда")).assertExists()

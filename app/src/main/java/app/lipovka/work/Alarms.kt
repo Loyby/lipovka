@@ -23,7 +23,8 @@ import app.lipovka.data.Kind
 import app.lipovka.data.St
 import app.lipovka.localized
 import app.lipovka.ru
-import java.time.LocalDateTime
+import app.lipovka.time.LocalDateTime
+import app.lipovka.ui.Ctx
 import java.util.concurrent.TimeUnit
 
 /** Every quarter of an hour: read the step counter, sort the morning post, refresh the weather and the widget. */
@@ -86,7 +87,7 @@ object Notes {
         // The morning post waits for the person to be up: the first steps of the day, or ten o'clock if the
         // phone hasn't counted any (left on the table). Never before an alarm clock that hasn't rung yet.
         val alarm = runCatching { context.getSystemService(android.app.AlarmManager::class.java).nextAlarmClock?.triggerTime }.getOrNull()
-        val sleeping = alarm != null && alarm - System.currentTimeMillis() in 0..ALARM_WINDOW_MS
+        val sleeping = alarm != null && alarm - java.lang.System.currentTimeMillis() in 0..ALARM_WINDOW_MS
         val up = !sleeping && ((s.days[now.toLocalDate().toEpochDay()] ?: 0) >= AWAKE_STEPS || now.hour >= 10)
         if (set.notifiedMorning < day && now.hour in 7..11 && up && s.morning == day && (bag.isNotEmpty() || desk > 0)) {
             val tele = bag.firstOrNull { it.kind == Kind.TELEGRAM.name }
@@ -146,8 +147,8 @@ object Notes {
         val s = c.post.state.value ?: return
         val year = ((c.game.mailDay(LocalDateTime.now()).toEpochDay() - s.start) / 365 + 1).toInt().coerceAtLeast(1)
         val lines = out.map { m ->
-            val t = app.lipovka.ui.Words.mail(r, c.content, m, r.ru, year)
-            t.brief.ifBlank { "${app.lipovka.ui.Words.kind(r, Kind.of(m.kind))} · ${t.title}" }
+            val t = app.lipovka.ui.Words.mail(Ctx(c, r.ru), c.content, m, r.ru, year)
+            t.brief.ifBlank { "${app.lipovka.ui.Words.kind(Ctx(c, r.ru), Kind.of(m.kind))} · ${t.title}" }
         }
         // what's still ahead, so the walk can go on without opening the app
         val next = c.game.plan(s).firstOrNull()

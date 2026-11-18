@@ -21,7 +21,7 @@ import app.lipovka.ui.art.StampArt
 import app.lipovka.ui.art.ItemArt
 import org.junit.Test
 import java.io.File
-import java.time.LocalDateTime
+import app.lipovka.time.LocalDateTime
 
 /** Draws the scenes in different seasons, weathers and hours to app/build/art/scenes (run with `-Prender`). */
 class RenderArtScenes {

@@ -39,7 +39,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
-import java.time.LocalDateTime
+import app.lipovka.time.LocalDateTime
 
 /** Every main screen over the demo village, drawn to PNGs (run with `-Prender`), in both languages. */
 @RunWith(RobolectricTestRunner::class)
@@ -66,7 +66,7 @@ abstract class ScreensBase {
 
     private fun shot(name: String, content: @Composable () -> Unit) {
         rule.mainClock.autoAdvance = false
-        rule.setContent { LipovkaTheme { Box(Modifier.fillMaxSize().background(C.paper)) { content() } } }
+        rule.setContent { val la = ApplicationProvider.getApplicationContext<LipovkaApp>(); androidx.compose.runtime.CompositionLocalProvider(app.lipovka.ui.LocalContext provides app.lipovka.ui.Ctx(la.container, la.ru)) { LipovkaTheme { Box(Modifier.fillMaxSize().background(C.paper)) { content() } } } }
         rule.mainClock.advanceTimeBy(2_000)
         rule.waitForIdle()
         rule.mainClock.advanceTimeBy(500)

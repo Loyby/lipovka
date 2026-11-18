@@ -15,6 +15,7 @@ import app.lipovka.MainActivity
 import app.lipovka.R
 import app.lipovka.container
 import app.lipovka.localized
+import app.lipovka.sensor
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.conflate
@@ -69,7 +70,7 @@ class WalkService : Service() {
 
     override fun onDestroy() {
         job?.cancel()
-        container.write { PostWidget.updateAll(app) }
+        container.write { PostWidget.updateAll(this@WalkService.applicationContext) }
         super.onDestroy()
     }
 

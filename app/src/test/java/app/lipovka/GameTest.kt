@@ -12,8 +12,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
-import java.time.LocalDate
-import java.time.ZoneId
+import app.lipovka.time.LocalDate
+import app.lipovka.time.ZoneId
 
 /** Plays the game for years with a typical walker and checks the post keeps coming and the stories keep going. */
 class GameTest {
@@ -75,7 +75,7 @@ class GameTest {
         val day = LocalDate.of(2026, 11, 11)
         val at = day.plusDays(1).atTime(0, 40).atZone(zone).toInstant().toEpochMilli()
         val stamp = Steps.stamp(day.toEpochDay(), at, zone)
-        assertEquals(day, java.time.Instant.ofEpochMilli(stamp).atZone(zone).toLocalDate())
+        assertEquals(day, app.lipovka.time.Instant.ofEpochMilli(stamp).atZone(zone).toLocalDate())
         // Today's steps keep the moment they came in.
         assertEquals(at, Steps.stamp(day.toEpochDay() + 1, at, zone))
     }

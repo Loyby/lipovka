@@ -2,119 +2,11 @@ package app.lipovka
 
 import android.app.Application
 import android.content.Context
-import android.content.res.Configuration
-import androidx.appcompat.app.AppCompatDelegate
-import android.net.Uri
-import app.lipovka.data.Backup
-import app.lipovka.data.Carried
-import app.lipovka.data.Content
 import app.lipovka.data.DemoSeed
-import app.lipovka.data.Event
-import app.lipovka.data.Mail
-import app.lipovka.data.Post
-import app.lipovka.data.PostDb
-import app.lipovka.data.Settings
-import app.lipovka.data.SettingsStore
-import app.lipovka.domain.Cal
-import app.lipovka.domain.Env
-import app.lipovka.domain.Game
-import app.lipovka.domain.GameState
-import app.lipovka.domain.Look
-import app.lipovka.domain.Sun
-import app.lipovka.domain.Weather
 import app.lipovka.work.Alarms
-import app.lipovka.work.HealthSteps
 import app.lipovka.work.PostWidget
-import app.lipovka.work.StepSensor
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import app.lipovka.work.WalkService
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.time.LocalDate
-import java.time.LocalDateTime
-
-class AppContainer(context: Context) {
-    val app = context.applicationContext
-    val db = PostDb.create(app)
-    val settings = SettingsStore(app)
-    val content = Content.load(app)
-    val game = Game(content)
-    val post = Post(db, game)
-    val sensor = StepSensor(app)
-    val health = HealthSteps(app)
-    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    /** Fire-and-forget so a write survives the screen being closed right after tapping. */
-    fun write(block: suspend AppContainer.() -> Unit) {
-        scope.launch { block() }
-    }
-
-    /** The events going on today in the districts already open. */
-    fun events(date: LocalDate, s: GameState?): List<Event> =
-        content.events.filter { Cal.within(date, it.start, it.end) && (s == null || s.open(it.district)) }
-
-    /** The world outside right now, as the scenes should draw it. */
-    fun env(now: LocalDateTime, settings: Settings, s: GameState?): Env {
-        val p = settings.place
-        val sun = p?.let { Sun.times(now.toLocalDate(), it.lat, it.lon) } ?: Sun.fallback(now.toLocalDate())
-        val w = settings.weather
-        val fresh = p != null && w != null && System.currentTimeMillis() - w.at < Weather.FRESH_MS
-        val south = (p?.lat ?: 1.0) < 0
-        val weather = if (fresh) w!! else Weather.simulated(now, Cal.villageMonth(now.toLocalDate(), south))
-        val looks = events(now.toLocalDate(), s).map { Look.of(it.look) }.filter { it != Look.NONE }.toSet()
-        return Env.build(now, sun, weather, fresh, looks, south)
-    }
-
-    /** Fetches the weather if a place is set and the last report is over an hour old. */
-    suspend fun refreshWeather(force: Boolean = false) {
-        val s = settings.now()
-        val p = s.place ?: return
-        val w = s.weather
-        if (!force && w != null && System.currentTimeMillis() - w.at < 60 * 60 * 1000L) return
-        val now = runCatching { withContext(Dispatchers.IO) { Weather.fetch(p.lat, p.lon) } }.getOrNull() ?: return
-        settings.update { it.copy(weather = now) }
-    }
-
-    /** Reads the steps (the phone's counter, or Health Connect if chosen) and sorts the morning post. Returns the letters delivered. */
-    suspend fun sync(): List<Mail> {
-        val from = settings.now().healthFrom
-        if (from >= 0) {
-            // A week back at most: watches and bands may hand over a day's steps only when they next sync.
-            val today = LocalDate.now()
-            val start = maxOf(LocalDate.ofEpochDay(from), today.minusDays(HEALTH_DAYS))
-            val totals = health.days(start, today)
-            return if (totals != null) post.health(totals) else { post.tick(); emptyList() }
-        }
-        val v = sensor.read()
-        return if (v != null) post.reading(v) else { post.tick(); emptyList() }
-    }
-
-    /** Writes the whole post office to a file the person picked. */
-    suspend fun backupTo(uri: Uri) {
-        val set = settings.now()
-        val text = Backup.write(post.snapshot(), Carried(set.place, set.notify))
-        withContext(Dispatchers.IO) {
-            (app.contentResolver.openOutputStream(uri, "wt") ?: error("can't write $uri")).use { it.write(text.toByteArray()) }
-        }
-    }
-
-    /** Replaces the post office with a backup's. Throws if the file isn't a Lipovka backup; nothing changes then. */
-    suspend fun restoreFrom(uri: Uri) {
-        val text = withContext(Dispatchers.IO) {
-            (app.contentResolver.openInputStream(uri) ?: error("can't read $uri")).use { it.readBytes().toString(Charsets.UTF_8) }
-        }
-        val (books, carried) = Backup.read(text)
-        post.restore(books)
-        settings.update { it.copy(onboarded = true, place = carried.place, weather = null, notify = carried.notify, milestonesSeen = null, lampOut = -1, calendarTorn = LocalDate.now().toEpochDay()) }
-        runCatching { refreshWeather(force = true) }
-        runCatching { PostWidget.updateAll(app) }
-    }
-
-    private companion object {
-        const val HEALTH_DAYS = 6L
-    }
-}
 
 class LipovkaApp : Application() {
     lateinit var container: AppContainer
@@ -122,22 +14,21 @@ class LipovkaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this)
-        if (BuildConfig.DEMO) container.scope.launch { DemoSeed.seedIfEmpty(this@LipovkaApp, container) }
+        val platform = AndroidPlatform(
+            this,
+            debug = BuildConfig.DEBUG || BuildConfig.DEMO,
+            demo = BuildConfig.DEMO,
+            shots = BuildConfig.SHOTS,
+            walk = object : AndroidPlatform.Walk {
+                override fun start(context: Context) = WalkService.start(context)
+                override fun stop(context: Context) = WalkService.stop(context)
+            },
+            widgets = { PostWidget.updateAll(it) },
+        )
+        container = AppContainer(platform)
+        if (BuildConfig.DEMO) container.scope.launch { DemoSeed.seedIfEmpty(container) }
         runCatching { Alarms.schedule(this) }
     }
 }
 
 val Context.container: AppContainer get() = (applicationContext as LipovkaApp).container
-
-/** Resources in the in-app language, which AppCompat doesn't localise outside activities before Android 13. */
-fun Context.localized(): Context {
-    val tags = AppCompatDelegate.getApplicationLocales()
-    if (tags.isEmpty) return this
-    val config = Configuration(resources.configuration)
-    config.setLocale(tags[0])
-    return createConfigurationContext(config)
-}
-
-/** Is this context in Russian? */
-val Context.ru: Boolean get() = resources.configuration.locales[0].language == "ru"
