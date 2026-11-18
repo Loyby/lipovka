@@ -62,7 +62,7 @@ class RenderArtChecks {
 
     private fun home(now: LocalDateTime): Home = runBlocking {
         val c = la.container
-        DemoSeed.seedIfEmpty(la, c)
+        DemoSeed.seedIfEmpty(c)
         c.post.refresh()
         // November: the sun rises at 7:40 and sets at 16:20
         val env = Env.build(now, SunTimes(7 * 60 + 40, 16 * 60 + 20), WeatherNow(Sky.CLOUDY, 2.0, 3.0, 0), true, emptySet())
@@ -90,7 +90,7 @@ class RenderArtChecks {
     @Test fun midnight() {
         val h = home(today.atTime(0, 5))
         show("night-0005") { Column(Modifier.padding(16.dp)) { Evening(h) } }
-        val tomorrowName = app.lipovka.ui.Words.date(la, today.toEpochDay())
+        val tomorrowName = app.lipovka.ui.Words.date(app.lipovka.ui.Ctx(la.container, true), today.toEpochDay())
         assertEquals(1, count("Ночь на $tomorrowName"))
         assertEquals(0, count("Вечер,"))
     }
@@ -154,7 +154,7 @@ class RenderArtChecks {
         shadowOf(la).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
         val c = la.container
         val mail = runBlocking {
-            DemoSeed.seedIfEmpty(la, c)
+            DemoSeed.seedIfEmpty(c)
             c.settings.update { it.copy(notify = true, notifyDelivered = false) }
             c.post.refresh()
             c.post.state.value!!.mail.first { it.state == St.SEEN && it.to != "me" && it.src.startsWith("arc:") }

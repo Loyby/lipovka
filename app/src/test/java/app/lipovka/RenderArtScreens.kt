@@ -59,7 +59,7 @@ abstract class ScreensBase {
     private fun home(e: Env = env(8, Sky.RAIN, 8.0)): Home = runBlocking {
         val app = ApplicationProvider.getApplicationContext<LipovkaApp>()
         val c = app.container
-        DemoSeed.seedIfEmpty(app, c)
+        DemoSeed.seedIfEmpty(c)
         c.post.refresh()
         Home(c.post.state.value!!, c.settings.now(), c.content, c.game, e, LocalDateTime.now().withHour(e.hour).withMinute(15), app.ru)
     }
