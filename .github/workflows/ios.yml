@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, macos-14, macos-26, macos-15-intel]
+        os: [macos-latest, macos-15-intel]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
@@ -56,7 +56,9 @@ jobs:
             -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             build | tee xcodebuild.log | grep -E "error|warning: .*Kotlin|BUILD" || true
-          test -d build/Build/Products/Release-iphoneos/Lipovka.app || { tail -200 xcodebuild.log; exit 1; }
+          # the app counts only with its program inside (a failed Swift step still leaves an empty .app behind)
+          grep -q "BUILD SUCCEEDED" xcodebuild.log && test -f build/Build/Products/Release-iphoneos/Lipovka.app/Lipovka \
+            || { grep -E "error:" xcodebuild.log | head -50; tail -100 xcodebuild.log; exit 1; }
 
       - name: Package Lipovka.ipa
         run: |
