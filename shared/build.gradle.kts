@@ -30,6 +30,7 @@ kotlin {
         all {
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
             languageSettings.optIn("kotlinx.cinterop.BetaInteropApi")
+            languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
         commonMain.dependencies {
             api(compose.runtime)

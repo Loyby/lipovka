@@ -2,12 +2,12 @@ package app.lipovka.time
 
 import app.lipovka.compat.Locale
 import app.lipovka.time.format.DateTimeFormatter
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.offsetAt
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.Instant as KInstant
+import kotlin.time.Instant as KInstant
 import kotlinx.datetime.LocalDateTime as KLocalDateTime
 
 /*

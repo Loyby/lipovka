@@ -210,7 +210,7 @@ class Game(val content: Content) {
     private fun deliver(s: GameState, m: Mail, day: Long, now: Long): Mail {
         val d = m.copy(state = St.DELIVERED, deliveredAt = now)
         s.put(d)
-        if (d.id < 0) s.newMail.replaceAll { if (it.id == d.id) d else it }
+        if (d.id < 0) s.newMail.replaceWith(d)
         advanceArc(s, d, day)
         return d
     }
@@ -413,7 +413,7 @@ class Game(val content: Content) {
     private fun take(s: GameState, m: Mail) {
         val b = m.copy(state = St.BAG)
         s.put(b)
-        if (b.id < 0) s.newMail.replaceAll { if (it.id == b.id) b else it }
+        if (b.id < 0) s.newMail.replaceWith(b)
     }
 
     /**
@@ -537,4 +537,9 @@ class Game(val content: Content) {
             s.dirtyStamps += m.stamp
         }
     }
+}
+
+/** Puts [m] in place of the letter with the same id (MutableList.replaceAll is JVM-only). */
+private fun MutableList<Mail>.replaceWith(m: Mail) {
+    for (i in indices) if (this[i].id == m.id) this[i] = m
 }

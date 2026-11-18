@@ -57,7 +57,7 @@ import app.lipovka.time.format.DateTimeFormatter
  */
 @Composable
 fun CalendarSheet(home: Home, date: LocalDate, onClose: () -> Unit) {
-    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+    Dialog(onDismissRequest = onClose, properties = sheetDialogProperties()) {
         Sheet(home, date, onClose)
     }
 }
@@ -156,3 +156,6 @@ private val MOON = listOf(
     R.string.moon_new, R.string.moon_waxing_crescent, R.string.moon_first_quarter, R.string.moon_waxing_gibbous,
     R.string.moon_full, R.string.moon_waning_gibbous, R.string.moon_last_quarter, R.string.moon_waning_crescent,
 )
+
+/** A full-width dialog; on Android it also draws under the system bars. */
+expect fun sheetDialogProperties(): DialogProperties

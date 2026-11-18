@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -148,7 +149,7 @@ fun LipovkaRoot(settings: Settings) {
                     Tab.DIARY -> DiaryScreen(home) { push(Overlay.Letter(it)) }
                 }
             }
-            if (!WindowInsets.isImeVisible) TabBar(tab, home) { tab = it }
+            if (WindowInsets.ime.getBottom(LocalDensity.current) == 0) TabBar(tab, home) { tab = it }
         }
         when (val o = overlays.lastOrNull()) {
             Overlay.Visits -> VisitScreen(home, onDone = { pop() })

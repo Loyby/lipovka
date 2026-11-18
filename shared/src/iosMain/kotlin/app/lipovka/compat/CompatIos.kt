@@ -42,7 +42,7 @@ actual fun httpGet(url: String, userAgent: String): String {
     val u = NSURL.URLWithString(url) ?: error("bad url")
     val req = NSMutableURLRequest.requestWithURL(u)
     req.setValue(userAgent, forHTTPHeaderField = "User-Agent")
-    req.timeoutInterval = 8.0
+    req.setTimeoutInterval(8.0)
     val done = dispatch_semaphore_create(0)
     var body: ByteArray? = null
     var failure: String? = null
