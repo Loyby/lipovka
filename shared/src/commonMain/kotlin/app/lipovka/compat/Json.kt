@@ -43,14 +43,24 @@ private fun num(v: Any?, key: Any): Number = when (v) {
     else -> throw JSONException("$key is not a number")
 }
 
+private fun parse(text: String): JsonElement =
+    try { Json.parseToJsonElement(text) } catch (e: Exception) { throw JSONException("not JSON: ${e.message}") }
+
+private fun parseObject(text: String): LinkedHashMap<String, Any?> {
+    val o = parse(text) as? JsonObject ?: throw JSONException("not a JSON object")
+    return LinkedHashMap(o.mapValues { wrap(it.value) })
+}
+
+private fun parseArray(text: String): MutableList<Any?> {
+    val a = parse(text) as? JsonArray ?: throw JSONException("not a JSON array")
+    return a.map { wrap(it) }.toMutableList()
+}
+
 class JSONObject private constructor(internal val map: LinkedHashMap<String, Any?>) {
     constructor() : this(LinkedHashMap())
     constructor(m: Map<String, *>) : this(LinkedHashMap(m.mapValues { it.value }))
     internal constructor(o: JsonObject) : this(LinkedHashMap(o.mapValues { wrap(it.value) }))
-    constructor(text: String) : this(
-        (runCatching { Json.parseToJsonElement(text) }.getOrElse { throw JSONException("not JSON: ${it.message}") } as? JsonObject)
-            ?: throw JSONException("not a JSON object"),
-    )
+    constructor(text: String) : this(parseObject(text))
 
     fun put(key: String, value: Any?): JSONObject { map[key] = value; return this }
     fun has(key: String) = map.containsKey(key)
@@ -82,10 +92,7 @@ class JSONArray private constructor(internal val list: MutableList<Any?>) {
     constructor() : this(mutableListOf())
     constructor(c: Collection<*>) : this(c.toMutableList())
     internal constructor(a: JsonArray) : this(a.map { wrap(it) }.toMutableList())
-    constructor(text: String) : this(
-        (runCatching { Json.parseToJsonElement(text) }.getOrElse { throw JSONException("not JSON") } as? JsonArray)
-            ?: throw JSONException("not a JSON array"),
-    )
+    constructor(text: String) : this(parseArray(text))
 
     fun length() = list.size
     fun put(v: Any?): JSONArray { list += v; return this }

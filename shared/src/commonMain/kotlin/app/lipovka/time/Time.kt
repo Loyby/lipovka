@@ -4,6 +4,7 @@ import app.lipovka.compat.Locale
 import app.lipovka.time.format.DateTimeFormatter
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.offsetAt
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.Instant as KInstant
@@ -249,6 +250,7 @@ class LocalDateTime internal constructor(private val date: LocalDate, private va
 /** A time zone, as java.time.ZoneId. */
 class ZoneId private constructor(internal val tz: TimeZone) {
     val id: String get() = tz.id
+    val rules: ZoneRules get() = ZoneRules(tz)
     override fun equals(other: Any?) = other is ZoneId && other.tz == tz
     override fun hashCode() = tz.hashCode()
     override fun toString() = tz.id
@@ -259,6 +261,14 @@ class ZoneId private constructor(internal val tz: TimeZone) {
         val UTC: ZoneId = ZoneId(TimeZone.UTC)
     }
 }
+
+/** The offsets of a time zone, as java.time.zone.ZoneRules. */
+class ZoneRules internal constructor(private val tz: TimeZone) {
+    fun getOffset(i: Instant): ZoneOffset = ZoneOffset(tz.offsetAt(KInstant.fromEpochMilliseconds(i.toEpochMilli())).totalSeconds)
+}
+
+/** An offset from UTC, as java.time.ZoneOffset. */
+class ZoneOffset(val totalSeconds: Int)
 
 /** A moment, as java.time.Instant (millisecond precision is all the game uses). */
 class Instant private constructor(private val ms: Long) : Comparable<Instant> {

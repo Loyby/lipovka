@@ -79,7 +79,7 @@ private fun Sheet(home: Home, date: LocalDate, onClose: () -> Unit) {
     val holidays = c.events(date, home.s).map { it.name(ru) }
     val phase = ((Air.moonAge(date) / 29.530588 * 8 + .5).toInt()) % 8
     val red = date.dayOfWeek == DayOfWeek.SATURDAY || date.dayOfWeek == DayOfWeek.SUNDAY
-    val weekday = date.format(DateTimeFormatter.ofPattern("EEEE", locale)).replaceFirstChar { it.titlecase(locale) }
+    val weekday = date.format(DateTimeFormatter.ofPattern("EEEE", locale)).replaceFirstChar { it.titlecase() }
     val day = date.format(DateTimeFormatter.ofPattern(if (ru) "d MMMM" else "MMMM d", locale))
 
     Box(Modifier.fillMaxSize().background(C.paper).clickable(remember { MutableInteractionSource() }, null) {}) {
@@ -152,7 +152,7 @@ private fun moonIcon(date: LocalDate): Buf = Buf(15, 15).also { b ->
     Air.moon(b, 7, 7, 4, date, rgb(0x151d34))
 }
 
-private val MOON = intArrayOf(
+private val MOON = listOf(
     R.string.moon_new, R.string.moon_waxing_crescent, R.string.moon_first_quarter, R.string.moon_waxing_gibbous,
     R.string.moon_full, R.string.moon_waning_gibbous, R.string.moon_last_quarter, R.string.moon_waning_crescent,
 )

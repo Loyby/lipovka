@@ -157,7 +157,7 @@ private fun Calendar(
             val canOn = ym < last
             Text("‹", style = T.Title.copy(color = if (canBack) C.ink else C.paper2),
                 modifier = Modifier.clickable(enabled = canBack) { onMonth(ym.minusMonths(1)) }.padding(horizontal = 14.dp))
-            val title = ym.atDay(1).format(DateTimeFormatter.ofPattern("LLLL yyyy", locale)).replaceFirstChar { it.titlecase(locale) }
+            val title = ym.atDay(1).format(DateTimeFormatter.ofPattern("LLLL yyyy", locale)).replaceFirstChar { it.titlecase() }
             Text(title, style = T.Heading, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
             Text("›", style = T.Title.copy(color = if (canOn) C.ink else C.paper2),
                 modifier = Modifier.clickable(enabled = canOn) { onMonth(ym.plusMonths(1)) }.padding(horizontal = 14.dp))
