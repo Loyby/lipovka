@@ -2,6 +2,11 @@ package app.lipovka.ui
 
 import app.lipovka.compat.*
 
+import app.lipovka.ui.art.Buf
+import app.lipovka.ui.art.Sprites
+import app.lipovka.ui.art.blit
+import app.lipovka.ui.components.BufImage
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -111,8 +116,9 @@ fun LipovkaRoot(settings: Settings) {
         // Out of sight: the phone keeps counting on its own (Android: a quiet foreground service).
         onPauseOrDispose { job.cancel(); c.platform.background(c, health); c.write { platform.changed(this) } }
     }
+    app.lipovka.ui.art.Art.postman = settings.postman
     if (!settings.onboarded) {
-        Onboarding()
+        Onboarding(settings.postman)
         return
     }
     val s = state ?: run { Box(Modifier.fillMaxSize().background(C.bg)); return }
@@ -183,9 +189,17 @@ private fun TabBar(tab: Tab, home: Home, onTab: (Tab) -> Unit) {
     }
 }
 
-/** Tiny pixel icons for the tabs. */
+/** The tab icons, drawn from the art sheet; the tabs not open are faded. */
 @Composable
 private fun TabIcon(t: Tab, sel: Boolean, badge: Boolean) {
+    val pic = remember(t) { Sprites.get("icons/tab_" + t.name.lowercase())?.let { s -> Buf(s.lw, s.lh, s.scale).also { it.blit(s, s.lw / 2, s.lh) } } }
+    if (pic != null) {
+        Box {
+            BufImage(pic, Modifier.alpha(if (sel) 1f else .55f), scale = 1.3.dp)
+            if (badge) Box(Modifier.align(Alignment.TopEnd).size(7.dp).background(C.red))
+        }
+        return
+    }
     val ink = if (sel) C.ink else C.muted
     val accent = if (sel) C.red else C.faint
     Canvas(Modifier.size(24.dp).padding(2.dp)) {

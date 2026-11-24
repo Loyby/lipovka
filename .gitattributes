@@ -6,3 +6,5 @@
 *.png binary
 *.webm binary
 *.ogg binary
+*.spr binary
+*.webp binary

@@ -47,6 +47,8 @@ data class Settings(
     val toysVolume: Int = VOLUME_MAX,
     /** The milestones (the dog, the districts) already told of; null until first looked at, so old ones aren't. */
     val milestonesSeen: Set<String>? = null,
+    /** Which drawn postman or postwoman carries the post (see [app.lipovka.ui.art.Postman]). */
+    val postman: String = app.lipovka.ui.art.Postman.DEFAULT,
 )
 
 /** The settings, kept at [path] (on Android the same file `preferencesDataStore("settings")` always used). */
@@ -74,6 +76,7 @@ class SettingsStore(path: String) {
             ambienceVolume = (this[AMB_VOL] ?: VOLUME_MAX).coerceIn(0, VOLUME_MAX),
             toysVolume = (this[TOYS_VOL] ?: VOLUME_MAX).coerceIn(0, VOLUME_MAX),
             milestonesSeen = this[MILESTONES],
+            postman = this[POSTMAN] ?: app.lipovka.ui.art.Postman.DEFAULT,
         )
     }
 
@@ -107,6 +110,7 @@ class SettingsStore(path: String) {
             it[TOYS_VOL] = s.toysVolume
             val seen = s.milestonesSeen
             if (seen != null) it[MILESTONES] = seen else it.remove(MILESTONES)
+            it[POSTMAN] = s.postman
         }
     }
 
@@ -131,5 +135,6 @@ class SettingsStore(path: String) {
         val AMB_VOL = intPreferencesKey("ambience_volume")
         val TOYS_VOL = intPreferencesKey("toys_volume")
         val MILESTONES = stringSetPreferencesKey("milestones_seen")
+        val POSTMAN = stringPreferencesKey("postman")
     }
 }

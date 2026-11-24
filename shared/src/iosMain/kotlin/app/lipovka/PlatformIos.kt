@@ -136,7 +136,7 @@ actual fun StepSource(health: Boolean) {
 actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) = Unit
 
 /** The view controller on top, to show a picker over. */
-private fun top(): UIViewController? {
+internal fun top(): UIViewController? {
     var vc = UIApplication.sharedApplication.keyWindow?.rootViewController
     while (vc?.presentedViewController != null) vc = vc.presentedViewController
     return vc

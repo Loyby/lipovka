@@ -7,8 +7,8 @@ options:
     iOS: "15.0"
 settings:
   base:
-    MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.0.31"
+    CURRENT_PROJECT_VERSION: "31"
 targets:
   Lipovka:
     type: application
@@ -26,6 +26,11 @@ targets:
       - path: ../app/src/main/assets
         name: assets
         type: folder
+        buildPhase: resources
+      - path: ../app/src/main/resources/sprites
+        type: folder
+        buildPhase: resources
+      - path: ../app/src/main/resources/qr_play.txt
         buildPhase: resources
       - path: ../shared/src/androidMain/res/font/m6x11.ttf
         buildPhase: resources

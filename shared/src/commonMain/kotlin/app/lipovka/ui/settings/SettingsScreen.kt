@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -106,62 +107,63 @@ fun SettingsScreen(home: Home, onBack: () -> Unit) {
     val set = home.settings
     Column(Modifier.fillMaxSize().background(C.paper).clickable(remember { MutableInteractionSource() }, null) {}) {
         TopBar(stringResource(R.string.settings), onBack)
+        // A few short pages instead of one long list: what one looks for is on its own tab.
+        var tab by rememberSaveable { mutableIntStateOf(0) }
+        val tabs = listOf(R.string.set_tab_world, R.string.set_tab_sound, R.string.set_tab_more)
+        app.lipovka.ui.components.Tabs(tabs.map { stringResource(it) }, tab, Modifier.padding(horizontal = 16.dp).padding(bottom = 10.dp)) { tab = it }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).navigationBarsPadding(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Eyebrow(stringResource(R.string.weather))
-            val p = set.place
-            val w = set.weather
-            Text(
-                if (p != null && w != null) stringResource(R.string.weather_now, p.name, Words.sky(w.sky, home.ru), Math.round(w.temp).toString())
-                else if (p != null) p.name else stringResource(R.string.weather_off),
-                style = T.Body,
-            )
-            Text(stringResource(R.string.weather_hint), style = T.Small)
-            PlacePicker(home.ru, p?.name.orEmpty()) { picked -> c.write { settings.update { it.copy(place = picked, weather = null) }; refreshWeather(force = true) } }
-            if (p != null) PixelButton(stringResource(R.string.weather_none), { c.write { settings.update { it.copy(place = null, weather = null) } } }, Modifier.fillMaxWidth(), kind = Kind.GHOST)
+            when (tab) {
+                0 -> {
+                    Eyebrow(stringResource(R.string.postman_title))
+                    PostmanPicker(set.postman)
 
-            Eyebrow(stringResource(R.string.steps_source))
-            StepSource(set.healthFrom >= 0)
+                    Eyebrow(stringResource(R.string.weather))
+                    val p = set.place
+                    val w = set.weather
+                    Text(
+                        if (p != null && w != null) stringResource(R.string.weather_now, p.name, Words.sky(w.sky, home.ru), Math.round(w.temp).toString())
+                        else if (p != null) p.name else stringResource(R.string.weather_off),
+                        style = T.Body,
+                    )
+                    Text(stringResource(R.string.weather_hint), style = T.Small)
+                    PlacePicker(home.ru, p?.name.orEmpty()) { picked -> c.write { settings.update { it.copy(place = picked, weather = null) }; refreshWeather(force = true) } }
+                    if (p != null) PixelButton(stringResource(R.string.weather_none), { c.write { settings.update { it.copy(place = null, weather = null) } } }, Modifier.fillMaxWidth(), kind = Kind.GHOST)
 
-            Eyebrow(stringResource(R.string.notifications))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.notify_text), style = T.Body, modifier = Modifier.weight(1f))
-                PixelButton(stringResource(if (set.notify) R.string.on else R.string.off), { c.write { settings.update { it.copy(notify = !it.notify) } } },
-                    kind = if (set.notify) Kind.PRIMARY else Kind.GHOST)
-            }
-            if (set.notify) Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.notify_delivered), style = T.Body, modifier = Modifier.weight(1f))
-                PixelButton(stringResource(if (set.notifyDelivered) R.string.on else R.string.off), { c.write { settings.update { it.copy(notifyDelivered = !it.notifyDelivered) } } },
-                    kind = if (set.notifyDelivered) Kind.PRIMARY else Kind.GHOST)
-            }
+                    Eyebrow(stringResource(R.string.steps_source))
+                    StepSource(set.healthFrom >= 0)
+                }
+                1 -> {
+                    Eyebrow(stringResource(R.string.notifications))
+                    app.lipovka.ui.components.SwitchRow(stringResource(R.string.notify_text), set.notify) { v -> c.write { settings.update { it.copy(notify = v) } } }
+                    if (set.notify) app.lipovka.ui.components.SwitchRow(stringResource(R.string.notify_delivered), set.notifyDelivered) { v -> c.write { settings.update { it.copy(notifyDelivered = v) } } }
 
-            Eyebrow(stringResource(R.string.sounds))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.ambience_text), style = T.Body, modifier = Modifier.weight(1f))
-                PixelButton(stringResource(if (set.ambience) R.string.on else R.string.off), { c.write { settings.update { it.copy(ambience = !it.ambience) } } },
-                    kind = if (set.ambience) Kind.PRIMARY else Kind.GHOST)
-            }
-            if (set.ambience) Volume(set.ambienceVolume) { v -> c.write { settings.update { it.copy(ambienceVolume = v) } } }
-            Text(stringResource(R.string.ambience_hint), style = T.Small)
-            Text(stringResource(R.string.toys_text), style = T.Body)
-            Volume(set.toysVolume) { v -> c.write { settings.update { it.copy(toysVolume = v) } } }
-            Text(stringResource(R.string.toys_hint), style = T.Small)
-
-            Eyebrow(stringResource(R.string.language))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((tag, label) in listOf("" to stringResource(R.string.lang_system), "ru" to "Русский", "en" to "English")) {
+                    Eyebrow(stringResource(R.string.sounds))
+                    app.lipovka.ui.components.SwitchRow(stringResource(R.string.ambience_text), set.ambience) { v -> c.write { settings.update { it.copy(ambience = v) } } }
+                    if (set.ambience) Volume(set.ambienceVolume) { v -> c.write { settings.update { it.copy(ambienceVolume = v) } } }
+                    Text(stringResource(R.string.ambience_hint), style = T.Small)
+                    Text(stringResource(R.string.toys_text), style = T.Body)
+                    Volume(set.toysVolume) { v -> c.write { settings.update { it.copy(toysVolume = v) } } }
+                    Text(stringResource(R.string.toys_hint), style = T.Small)
+                }
+                else -> {
+                    Eyebrow(stringResource(R.string.language))
+                    val langs = listOf("" to stringResource(R.string.lang_system), "ru" to "Русский", "en" to "English")
                     val cur = c.platform.langTag()
-                    PixelButton(label, { c.platform.setLang(tag) }, Modifier.weight(1f), kind = if (cur == tag) Kind.PRIMARY else Kind.GHOST)
+                    app.lipovka.ui.components.Tabs(langs.map { it.second }, langs.indexOfFirst { it.first == cur }.coerceAtLeast(0)) { k ->
+                        val tag = langs[k].first
+                        c.platform.setLang(tag)
+                    }
+
+                    Eyebrow(stringResource(R.string.backup))
+                    BackupSection()
+
+                    Eyebrow(stringResource(R.string.community))
+                    CommunityLinks()
+
+                    Eyebrow(stringResource(R.string.about))
+                    Text(stringResource(R.string.credits), style = T.Small)
                 }
             }
-
-            Eyebrow(stringResource(R.string.backup))
-            BackupSection()
-
-            Eyebrow(stringResource(R.string.community))
-            CommunityLinks()
-
-            Eyebrow(stringResource(R.string.about))
-            Text(stringResource(R.string.credits), style = T.Small)
             Spacer(Modifier.height(16.dp))
         }
     }

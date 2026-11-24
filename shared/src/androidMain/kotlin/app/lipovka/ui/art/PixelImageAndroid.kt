@@ -11,4 +11,4 @@ actual class PixelImage actual constructor(private val w: Int, private val h: In
 }
 
 /** For the widget, which draws with Android's own bitmaps. */
-fun Buf.toBitmap(): Bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).also { it.setPixels(d, 0, w, 0, 0, w, h) }
+fun Buf.toBitmap(): Bitmap = Bitmap.createBitmap(sw, sh, Bitmap.Config.ARGB_8888).also { it.setPixels(d, 0, sw, 0, 0, sw, sh) }

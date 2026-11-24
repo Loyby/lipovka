@@ -9,3 +9,5 @@ actual fun pixelFont(): FontFamily {
     val bytes = IosPlatform.bundleFile("m6x11.ttf") ?: return FontFamily.Default
     return FontFamily(Font(identity = "m6x11", data = bytes, weight = FontWeight.Normal))
 }
+
+internal actual fun screenPixelsPerSp(): Float = platform.UIKit.UIScreen.mainScreen.scale.toFloat()

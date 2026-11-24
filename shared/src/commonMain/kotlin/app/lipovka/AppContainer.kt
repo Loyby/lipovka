@@ -72,14 +72,14 @@ class AppContainer(val platform: Platform) {
     /** The whole post office as a backup file's text. */
     suspend fun backup(): String {
         val set = settings.now()
-        return Backup.write(post.snapshot(), Carried(set.place, set.notify))
+        return Backup.write(post.snapshot(), Carried(set.place, set.notify, set.postman))
     }
 
     /** Replaces the post office with a backup's. Throws if the text isn't a Lipovka backup; nothing changes then. */
     suspend fun restore(text: String) {
         val (books, carried) = Backup.read(text)
         post.restore(books)
-        settings.update { it.copy(onboarded = true, place = carried.place, weather = null, notify = carried.notify, milestonesSeen = null, lampOut = -1, calendarTorn = LocalDate.now().toEpochDay()) }
+        settings.update { it.copy(onboarded = true, place = carried.place, weather = null, notify = carried.notify, postman = carried.postman, milestonesSeen = null, lampOut = -1, calendarTorn = LocalDate.now().toEpochDay()) }
         runCatching { refreshWeather(force = true) }
         runCatching { platform.changed(this) }
     }
