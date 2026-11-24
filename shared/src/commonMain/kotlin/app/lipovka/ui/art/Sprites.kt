@@ -28,7 +28,7 @@ object Sprites {
 
     private fun load(name: String): Sprite? {
         val bytes = artResource("sprites/$name.spr") ?: return null
-        return Buffer().write(bytes).use { s ->
+        return Buffer().write(bytes).let { s ->
             if (s.readUtf8(4) != "SPR2") return null
             fun byte() = s.readByte().toInt() and 0xff
             val w = s.readShort().toInt() and 0xffff

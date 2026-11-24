@@ -11,6 +11,7 @@ import org.jetbrains.skia.Image
 import platform.Foundation.NSData
 import platform.Foundation.create
 import platform.UIKit.UIActivityViewController
+import platform.UIKit.popoverPresentationController
 import platform.UIKit.UIImage
 
 internal actual fun decodeCardImage(bytes: ByteArray): ImageBitmap =
